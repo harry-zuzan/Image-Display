@@ -7,39 +7,7 @@ from PIL import Image, ImageTk
 #import ttk
 
 from NameList import NameList
-
-
-#class NameList:
-#	def __init__(self,names):
-#		self.names = list(names)
-#		self.posn = 0
-
-#	def __len__(self):
-#		return len(self.names)
-
-#	def current(self):
-#		return self.names[self.posn]
-
-#	def prev(self):
-#		if self.posn > 0: self.posn -= 1
-#		return self.names[self.posn]
-
-#	def next(self):
-#		if self.posn < (len(self) - 1): self.posn += 1
-#		return self.names[self.posn]
-
-#	def at_begin(self):
-#		if self.posn == 0: return True
-#		return False
-
-#	def at_end(self):
-#		if self.posn == (len(self) - 1): return True
-#		return False
-
-#	def at_middle(self):
-#		return not (self.at_begin() or self.at_end())
-
-
+from DispUtils import Command
 
 
 class IterButton(Button):
@@ -62,25 +30,70 @@ class ResizingCanvas(Canvas):
 #		self.height = self.winfo_reqheight()
 #		self.width = self.winfo_reqwidth()
 
+		self.bind('Button-1-Motion',self.report_position)
 
-	def resize_image(self,event):
-		height,width = self.image.size
-		height1,width1 = 2*height,2*width
 
-		self.image = self.image.resize((width1,height1),Image.NEAREST)
+	def resize_image(self,scale):
+		if self.scale == scale: return
+		self.scale = scale
+		height,width = self.image_store.size
+		height,width = height*scale,width*scale
+		image = self.image_store.resize((width,height),Image.NEAREST)
+		self.imagetk = ImageTk.PhotoImage(image)
+		self.image_display = image
 
 		self.delete(self.image_id)
 
-		self.imagetk = ImageTk.PhotoImage(self.image)
+		self.config(width=width, height=height)
 
-		self.config(width=width1, height=height1)
-
+		self.delete(self.image_id)
 		self.image_id = \
 			self.create_image(0,0,anchor=NW,image=self.imagetk)
 
 		self.pack()
 
-		print '****', self.image.size
+	def resize_image1(self,event,scale):
+		if self.scale == scale: return
+		self.scale = scale
+		height,width = self.image_store.size
+		height,width = height*scale,width*scale
+		image = self.image_store.resize((width,height),Image.NEAREST)
+		self.imagetk = ImageTk.PhotoImage(image)
+		self.image_display = image
+
+		self.delete(self.image_id)
+
+		self.config(width=width, height=height)
+
+		self.delete(self.image_id)
+		self.image_id = \
+			self.create_image(0,0,anchor=NW,image=self.imagetk)
+
+		self.pack()
+
+
+
+	def display_image(self,image):
+		self.image_store = image
+		height,width = image.size
+		if self.scale != 1:
+			height,width = self.scale*height,self.scale*width
+			image = image.resize((width,height),Image.NEAREST)
+
+		self.config(width=width, height=height)
+
+		self.image_display = image
+		self.imagetk = ImageTk.PhotoImage(image)
+
+		if self.image_id: self.delete(self.image_id)
+
+		self.image_id = \
+			self.create_image(0,0,anchor=NW,image=self.imagetk)
+
+
+	def report_position(self,event):
+		print 'yeah got an event'
+
 
 
 
@@ -104,80 +117,69 @@ class CryoDisplay(Frame):
 		self.next_button.pack(side=LEFT,expand=NO,fill=BOTH)
 		self.next_button.bind('<Button-1>', self.display_next_image)
 
-		self.resize_button1 = IterButton(iter_frame, text='1X')
-		self.resize_button1.pack(side=LEFT,expand=NO,fill=BOTH)
-		self.resize_button1.bind('<Button-1>', self.resize1)
+		self.resize_button1x = IterButton(iter_frame, text='1X')
+		self.resize_button1x.pack(side=LEFT,expand=NO,fill=BOTH)
 
-		self.resize_button2 = IterButton(iter_frame, text='2X')
-		self.resize_button2.pack(side=LEFT,expand=NO,fill=BOTH)
-		self.resize_button2.bind('<Button-1>', self.resize2)
+		self.resize_button2x = IterButton(iter_frame, text='2X')
+		self.resize_button2x.pack(side=LEFT,expand=NO,fill=BOTH)
 
-		self.resize_button3 = IterButton(iter_frame, text='3X')
-		self.resize_button3.pack(side=LEFT,expand=NO,fill=BOTH)
-		self.resize_button3.bind('<Button-1>', self.resize3)
+		self.resize_button3x = IterButton(iter_frame, text='3X')
+		self.resize_button3x.pack(side=LEFT,expand=NO,fill=BOTH)
 
 		self.quit_button = IterButton(iter_frame,text='Quit',command=self.quit)
 		self.quit_button.pack(side=LEFT,expand=NO, fill=BOTH)
 
-		self.dummy = IterButton(iter_frame,text='',state=DISABLED,relief=FLAT)
-		self.dummy.pack(side=LEFT,expand=YES, fill=BOTH)
+		self.filler = IterButton(iter_frame,text='',state=DISABLED,relief=FLAT)
+		self.filler.pack(side=LEFT,expand=YES, fill=BOTH)
+
+		self.canvas = self.create_canvas()
+
+		self.resize_button1x.bind('<Button-1>',
+				func=lambda x: self.canvas.resize_image(1))
+		self.resize_button2x.bind('<Button-1>',
+				func=lambda x: self.canvas.resize_image(2))
+		self.resize_button3x.bind('<Button-1>',
+				func=lambda x: self.canvas.resize_image(3))
+
+		self.display_current_image()
 
 
-		self.canvas = self.display_first_image()
-
-
-	def display_first_image(self):
-		image_name = self.name_list.current()
-
-		image = Image.open(image_name)
-		canvas = ResizingCanvas(self,width=image.width,height=image.height)
-#			borderwidth=1,highlightthickness=1)
+	def create_canvas(self):
+		canvas = ResizingCanvas(self,width=128,height=128)
 		canvas.pack(side=LEFT,anchor=NW,fill=BOTH)
 
-		canvas.image = image
-		canvas.imagetk = ImageTk.PhotoImage(canvas.image)
-
-		canvas.image_id = canvas.create_image(0,0,
-							anchor=NW,image=canvas.imagetk)
+		canvas.image_id = None
+		canvas.scale = 1
 
 		return canvas
+
+
+
+	def display_current_image(self):
+		image_name = self.name_list.current()
+		image = Image.open(image_name)
+		self.canvas.display_image(image)
+
+
 
 
 	def display_next_image(self,event):
 
 		img_name = self.name_list.next()
+		image = Image.open(img_name)
 
-		self.canvas.image = Image.open(img_name)
-		self.canvas.imagetk = ImageTk.PhotoImage(self.canvas.image)
+		self.canvas.display_image(image)
 
-		self.canvas.delete(self.canvas.image_id)
-		self.canvas.image_id = \
-			self.canvas.create_image(0,0,anchor=NW,image=self.canvas.imagetk)
+		return
 
 
 	def display_prev_image(self,event):
 
 		img_name = self.name_list.prev()
+		image = Image.open(img_name)
 
-		self.canvas.image = Image.open(img_name)
-		self.canvas.imagetk = ImageTk.PhotoImage(self.canvas.image)
+		self.canvas.display_image(image)
 
-		self.canvas.image_id = \
-			self.canvas.create_image(0,0,anchor=NW,image=self.canvas.imagetk)
-
-
-	def resize1(self,event): self.resize(1)
-	def resize2(self,event): self.resize(2)
-	def resize3(self,event): self.resize(3)
-
-	def resize(self,size_mult):
-		print 'resize value =', size_mult
-#		self.canvas.resize(size_mult)
-
-	
-	def calc(self, display):
-		try: display.set(`eval(display.get())`)
-		except ValueError: display.set("ERROR")
 
 
 if __name__ == '__main__':
