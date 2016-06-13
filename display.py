@@ -30,29 +30,11 @@ class ResizingCanvas(Canvas):
 #		self.height = self.winfo_reqheight()
 #		self.width = self.winfo_reqwidth()
 
-		self.bind('Button-1-Motion',self.report_position)
+#		self.bind('<Button-1>',self.report_position)
+		self.bind('<B1-Motion>',self.report_position)
 
 
 	def resize_image(self,scale):
-		if self.scale == scale: return
-		self.scale = scale
-		height,width = self.image_store.size
-		height,width = height*scale,width*scale
-		image = self.image_store.resize((width,height),Image.NEAREST)
-		self.imagetk = ImageTk.PhotoImage(image)
-		self.image_display = image
-
-		self.delete(self.image_id)
-
-		self.config(width=width, height=height)
-
-		self.delete(self.image_id)
-		self.image_id = \
-			self.create_image(0,0,anchor=NW,image=self.imagetk)
-
-		self.pack()
-
-	def resize_image1(self,event,scale):
 		if self.scale == scale: return
 		self.scale = scale
 		height,width = self.image_store.size
