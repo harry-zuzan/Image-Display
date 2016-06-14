@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python2
 
 import glob
@@ -7,7 +8,7 @@ from PIL import Image, ImageTk
 #import ttk
 
 from NameList import NameList
-from DispUtils import Command
+from DispUtils import Command, Coordinate
 
 
 class IterButton(Button):
@@ -27,18 +28,39 @@ class IterButton(Button):
 class ResizingCanvas(Canvas):
 	def __init__(self,parent,**kwargs):
 		Canvas.__init__(self,parent,**kwargs)
+		self.pack()
+		self.focus_set()
 #		self.height = self.winfo_reqheight()
 #		self.width = self.winfo_reqwidth()
 
-#		self.bind('<Button-1>',self.report_position)
-		self.bind('<B1-Motion>',self.report_position)
+		self.bind('<Button-1>',self.scroll_start)
+		self.bind('<B1-Motion>',self.scroll_move)
+
+		self.bind('<Up>',         func=lambda crd: self.scroll_from_keyboard(Coordinate( 0,-1)))
+		self.bind('<Down>',       func=lambda crd: self.scroll_from_keyboard(Coordinate( 0, 1)))
+		self.bind('<Left>',       func=lambda crd: self.scroll_from_keyboard(Coordinate(-1, 0)))
+		self.bind('<Right>',      func=lambda crd: self.scroll_from_keyboard(Coordinate( 1, 0)))
+		self.bind('<Shift-Up>',   func=lambda crd: self.scroll_from_keyboard(Coordinate( 0,-8)))
+		self.bind('<Shift-Down>', func=lambda crd: self.scroll_from_keyboard(Coordinate( 0, 8)))
+		self.bind('<Shift-Left>', func=lambda crd: self.scroll_from_keyboard(Coordinate(-8, 0)))
+		self.bind('<Shift-Right>',func=lambda crd: self.scroll_from_keyboard(Coordinate( 8, 0)))
+
+	def scroll_start(self, event):
+		self.scan_mark(event.x, event.y)
+
+	def scroll_move(self, event):
+		self.scan_dragto(event.x, event.y, gain=1)
+
+	def scroll_from_keyboard(self,displace):
+		self.scan_mark(0,0)
+		self.scan_dragto(displace.x,displace.y,1)
 
 
-	def resize_image(self,scale):
-		if self.scale == scale: return
-		self.scale = scale
+	def resize_image(self,rescale):
+		if self.scale == 1 and rescale < 0: return
+		self.scale = self.scale + rescale
 		height,width = self.image_store.size
-		height,width = height*scale,width*scale
+		height,width = height*self.scale,width*self.scale
 		image = self.image_store.resize((width,height),Image.NEAREST)
 		self.imagetk = ImageTk.PhotoImage(image)
 		self.image_display = image
@@ -74,7 +96,8 @@ class ResizingCanvas(Canvas):
 
 
 	def report_position(self,event):
-		print 'yeah got an event'
+		self.scan_mark(0,0)
+		self.scan_dragto(1,1,1)
 
 
 
@@ -99,14 +122,11 @@ class CryoDisplay(Frame):
 		self.next_button.pack(side=LEFT,expand=NO,fill=BOTH)
 		self.next_button.bind('<Button-1>', self.display_next_image)
 
-		self.resize_button1x = IterButton(iter_frame, text='1X')
-		self.resize_button1x.pack(side=LEFT,expand=NO,fill=BOTH)
+		self.resize_buttonmx = IterButton(iter_frame, text='-')
+		self.resize_buttonmx.pack(side=LEFT,expand=NO,fill=BOTH)
 
-		self.resize_button2x = IterButton(iter_frame, text='2X')
-		self.resize_button2x.pack(side=LEFT,expand=NO,fill=BOTH)
-
-		self.resize_button3x = IterButton(iter_frame, text='3X')
-		self.resize_button3x.pack(side=LEFT,expand=NO,fill=BOTH)
+		self.resize_buttonpx = IterButton(iter_frame, text='+')
+		self.resize_buttonpx.pack(side=LEFT,expand=NO,fill=BOTH)
 
 		self.quit_button = IterButton(iter_frame,text='Quit',command=self.quit)
 		self.quit_button.pack(side=LEFT,expand=NO, fill=BOTH)
@@ -116,12 +136,10 @@ class CryoDisplay(Frame):
 
 		self.canvas = self.create_canvas()
 
-		self.resize_button1x.bind('<Button-1>',
+		self.resize_buttonmx.bind('<Button-1>',
+				func=lambda x: self.canvas.resize_image(-1))
+		self.resize_buttonpx.bind('<Button-1>',
 				func=lambda x: self.canvas.resize_image(1))
-		self.resize_button2x.bind('<Button-1>',
-				func=lambda x: self.canvas.resize_image(2))
-		self.resize_button3x.bind('<Button-1>',
-				func=lambda x: self.canvas.resize_image(3))
 
 		self.display_current_image()
 
@@ -136,24 +154,18 @@ class CryoDisplay(Frame):
 		return canvas
 
 
-
 	def display_current_image(self):
 		image_name = self.name_list.current()
 		image = Image.open(image_name)
 		self.canvas.display_image(image)
 
-
-
-
 	def display_next_image(self,event):
-
 		img_name = self.name_list.next()
 		image = Image.open(img_name)
 
 		self.canvas.display_image(image)
 
 		return
-
 
 	def display_prev_image(self,event):
 
