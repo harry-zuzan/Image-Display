@@ -1,15 +1,9 @@
-
-#!/usr/bin/env python2
-
-import glob
-
-from Tkinter import *
+from Tkinter import Button, Canvas, Frame
+from Tkinter import NW, TOP, LEFT, YES, NO, BOTH
+from Tkinter import DISABLED, FLAT
 from PIL import Image, ImageTk
-#import ttk
 
-from NameList import NameList
-from DispUtils import Command, Coordinate
-
+from DispUtils import Coordinate, NameList
 
 class IterButton(Button):
 	def __init__(self,root,**kwargs):
@@ -30,27 +24,49 @@ class ResizingCanvas(Canvas):
 		Canvas.__init__(self,parent,**kwargs)
 		self.pack()
 		self.focus_set()
+		self.parent = parent
 #		self.height = self.winfo_reqheight()
 #		self.width = self.winfo_reqwidth()
+
+		self.bind('<Left>', self.parent.display_prev_image)
+		self.bind('<Right>', self.parent.display_next_image)
+		self.bind('<Up>', self.parent.display_first_image)
+		self.bind('<Down>', self.parent.display_last_image)
+		self.bind('q', self.parent.exit_mainloop)
 
 		self.bind('<Button-1>',self.scroll_start)
 		self.bind('<B1-Motion>',self.scroll_move)
 
-		self.bind('<Up>',         func=lambda crd: self.scroll_from_keyboard(Coordinate( 0,-1)))
-		self.bind('<Down>',       func=lambda crd: self.scroll_from_keyboard(Coordinate( 0, 1)))
-		self.bind('<Left>',       func=lambda crd: self.scroll_from_keyboard(Coordinate(-1, 0)))
-		self.bind('<Right>',      func=lambda crd: self.scroll_from_keyboard(Coordinate( 1, 0)))
-		self.bind('<Shift-Up>',   func=lambda crd: self.scroll_from_keyboard(Coordinate( 0,-8)))
-		self.bind('<Shift-Down>', func=lambda crd: self.scroll_from_keyboard(Coordinate( 0, 8)))
-		self.bind('<Shift-Left>', func=lambda crd: self.scroll_from_keyboard(Coordinate(-8, 0)))
-		self.bind('<Shift-Right>',func=lambda crd: self.scroll_from_keyboard(Coordinate( 8, 0)))
+		# shift image by 1 pixel
+		self.bind('<Shift-Up>',
+			func=lambda crd: self.scroll_from_keyboard(Coordinate( 0,-1)))
+		self.bind('<Shift-Down>',
+			func=lambda crd: self.scroll_from_keyboard(Coordinate( 0, 1)))
+		self.bind('<Shift-Left>',
+			func=lambda crd: self.scroll_from_keyboard(Coordinate(-1, 0)))
+		self.bind('<Shift-Right>',
+			func=lambda crd: self.scroll_from_keyboard(Coordinate( 1, 0)))
 
+		# shift image by 8 pixels
+		self.bind('<Control-Up>',
+			func=lambda crd: self.scroll_from_keyboard(Coordinate( 0,-8)))
+		self.bind('<Control-Down>',
+			func=lambda crd: self.scroll_from_keyboard(Coordinate( 0, 8)))
+		self.bind('<Control-Left>',
+			func=lambda crd: self.scroll_from_keyboard(Coordinate(-8, 0)))
+		self.bind('<Control-Right>',
+			func=lambda crd: self.scroll_from_keyboard(Coordinate( 8, 0)))
+
+	# the next two work together to slide the image around the canvas
+	# using the mouse or track pad
 	def scroll_start(self, event):
 		self.scan_mark(event.x, event.y)
 
 	def scroll_move(self, event):
 		self.scan_dragto(event.x, event.y, gain=1)
 
+	# and this scrolls the image by a displacment of pixels using the
+	# arrow keys or whatever key is mapped to the method 
 	def scroll_from_keyboard(self,displace):
 		self.scan_mark(0,0)
 		self.scan_dragto(displace.x,displace.y,1)
@@ -101,22 +117,24 @@ class ResizingCanvas(Canvas):
 
 
 
-
 class CryoDisplay(Frame):
 	def __init__(self,img_names):
 		Frame.__init__(self)
 		self.pack(expand=YES, fill=BOTH)
 		self.master.title('CryoEM Image Display')
 		self.master.iconname('CDISP')
+		self.focus_set()
 
 		self.name_list = NameList(img_names)
 
 		iter_frame = Frame(self)
 		iter_frame.pack(side=TOP, expand=NO, fill=BOTH)
+		iter_frame.focus_set()
 
 		self.prev_button = IterButton(iter_frame, text='<')
 		self.prev_button.pack(side=LEFT,expand=NO,fill=BOTH)
 		self.prev_button.bind('<Button-1>', self.display_prev_image)
+
 
 		self.next_button = IterButton(iter_frame, text='>')
 		self.next_button.pack(side=LEFT,expand=NO,fill=BOTH)
@@ -159,6 +177,13 @@ class CryoDisplay(Frame):
 		image = Image.open(image_name)
 		self.canvas.display_image(image)
 
+	def display_prev_image(self,event):
+
+		img_name = self.name_list.prev()
+		image = Image.open(img_name)
+
+		self.canvas.display_image(image)
+
 	def display_next_image(self,event):
 		img_name = self.name_list.next()
 		image = Image.open(img_name)
@@ -167,18 +192,22 @@ class CryoDisplay(Frame):
 
 		return
 
-	def display_prev_image(self,event):
-
-		img_name = self.name_list.prev()
+	def display_first_image(self,event):
+		img_name = self.name_list.first()
 		image = Image.open(img_name)
 
 		self.canvas.display_image(image)
 
+		return
 
+	def display_last_image(self,event):
+		img_name = self.name_list.last()
+		image = Image.open(img_name)
 
-if __name__ == '__main__':
-	import glob
+		self.canvas.display_image(image)
 
-	images = glob.glob('images/*png')
-	CryoDisplay(images).mainloop()
+		return
+
+	def exit_mainloop(self,event):
+		self.quit()
 
