@@ -77,7 +77,8 @@ class ResizingCanvas(Canvas):
 		self.scale = self.scale + rescale
 		height,width = self.image_store.size
 		height,width = height*self.scale,width*self.scale
-		image = self.image_store.resize((width,height),Image.NEAREST)
+#		image = self.image_store.resize((width,height),Image.NEAREST)
+		image = self.image_store.resize((height,width),Image.NEAREST)
 		self.imagetk = ImageTk.PhotoImage(image)
 		self.image_display = image
 
