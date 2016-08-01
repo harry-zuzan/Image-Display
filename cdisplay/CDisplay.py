@@ -75,10 +75,10 @@ class ResizingCanvas(Canvas):
 	def resize_image(self,rescale):
 		if self.scale == 1 and rescale < 0: return
 		self.scale = self.scale + rescale
-		height,width = self.image_store.size
-		height,width = height*self.scale,width*self.scale
-#		image = self.image_store.resize((width,height),Image.NEAREST)
-		image = self.image_store.resize((height,width),Image.NEAREST)
+		width,height = self.image_store.size
+		width,height = width*self.scale,height*self.scale
+		image = self.image_store.resize((width,height),Image.NEAREST)
+#		image = self.image_store.resize((height,width),Image.NEAREST)
 		self.imagetk = ImageTk.PhotoImage(image)
 		self.image_display = image
 
@@ -96,7 +96,7 @@ class ResizingCanvas(Canvas):
 
 	def display_image(self,image):
 		self.image_store = image
-		width,height = image.size
+		width,height = self.image_store.size
 		if self.scale != 1:
 			width,height = self.scale*width,self.scale*height
 			image = image.resize((width,height),Image.NEAREST)
