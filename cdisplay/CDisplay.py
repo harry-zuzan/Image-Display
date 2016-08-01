@@ -150,7 +150,8 @@ class CryoDisplay(Frame):
 		self.quit_button = IterButton(iter_frame,text='Quit',command=self.quit)
 		self.quit_button.pack(side=LEFT,expand=NO, fill=BOTH)
 
-		self.filler = IterButton(iter_frame,text='',state=DISABLED,relief=FLAT)
+		self.filler = IterButton(iter_frame,text='',
+			state=DISABLED,relief=FLAT)
 		self.filler.pack(side=LEFT,expand=YES, fill=BOTH)
 
 		self.canvas = self.create_canvas()
@@ -181,6 +182,13 @@ class CryoDisplay(Frame):
 		image_name = self.name_list.current()
 		image = Image.open(image_name)
 		self.canvas.display_image(image)
+		filler_fmt = "{0}/{1} - {2}"
+		filler_string = filler_fmt.format(
+			self.name_list.position(),
+			self.name_list.size(),
+			image_name.split('/')[-1])
+
+		self.filler['text'] = filler_string
 
 	def display_prev_image(self,event):
 
@@ -194,6 +202,7 @@ class CryoDisplay(Frame):
 		image = Image.open(img_name)
 
 		self.canvas.display_image(image)
+		self.filler['text'] = "new text here"
 
 		return
 

@@ -25,6 +25,12 @@ class NameList:
 	def __len__(self):
 		return len(self.names)
 
+	def position(self):
+		return self.posn
+
+	def size(self):
+		return len(self.names)
+
 	def current(self):
 		return self.names[self.posn]
 
