@@ -96,9 +96,9 @@ class ResizingCanvas(Canvas):
 
 	def display_image(self,image):
 		self.image_store = image
-		height,width = image.size
+		width,height = image.size
 		if self.scale != 1:
-			height,width = self.scale*height,self.scale*width
+			width,height = self.scale*width,self.scale*height
 			image = image.resize((width,height),Image.NEAREST)
 
 		self.config(width=width, height=height)
