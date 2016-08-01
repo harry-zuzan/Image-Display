@@ -155,12 +155,16 @@ class CryoDisplay(Frame):
 
 		self.canvas = self.create_canvas()
 
+		self.display_current_image()
+
 		self.resize_buttonmx.bind('<Button-1>',
 				func=lambda x: self.canvas.resize_image(-1))
 		self.resize_buttonpx.bind('<Button-1>',
 				func=lambda x: self.canvas.resize_image(1))
 
-		self.display_current_image()
+		self.canvas.bind('+', func=lambda x: self.canvas.resize_image(1))
+		self.canvas.bind('-', func=lambda x: self.canvas.resize_image(-1))
+
 
 
 	def create_canvas(self):
