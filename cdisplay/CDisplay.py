@@ -184,27 +184,21 @@ class CryoDisplay(Frame):
 		self.canvas.display_image(image)
 		filler_fmt = "{0}/{1} - {2}"
 		filler_string = filler_fmt.format(
-			self.name_list.position(),
+			self.name_list.position() + 1,
 			self.name_list.size(),
 			image_name.split('/')[-1])
 
 		self.filler['text'] = filler_string
 
 	def display_prev_image(self,event):
+		self.name_list.prev()
+		self.display_current_image()
 
-		img_name = self.name_list.prev()
-		image = Image.open(img_name)
-
-		self.canvas.display_image(image)
 
 	def display_next_image(self,event):
-		img_name = self.name_list.next()
-		image = Image.open(img_name)
+		self.name_list.next()
+		self.display_current_image()
 
-		self.canvas.display_image(image)
-		self.filler['text'] = "new text here"
-
-		return
 
 	def display_first_image(self,event):
 		img_name = self.name_list.first()
