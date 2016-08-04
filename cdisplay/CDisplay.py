@@ -150,8 +150,13 @@ class CryoDisplay(Frame):
 		self.quit_button = IterButton(iter_frame,text='Quit',command=self.quit)
 		self.quit_button.pack(side=LEFT,expand=NO, fill=BOTH)
 
-		self.filler = IterButton(iter_frame,text='',
-			state=DISABLED,relief=FLAT)
+		self.filler = IterButton(iter_frame,relief=FLAT,overrelief=FLAT)
+		filler_background = self.filler.cget("background")
+		self.filler.configure(activebackground=filler_background)
+
+#  uncomment to look at the keys available in a button
+#		for key in self.filler.keys(): print key, '=', self.filler.cget(key)
+
 		self.filler.pack(side=LEFT,expand=YES, fill=BOTH)
 
 		self.canvas = self.create_canvas()
