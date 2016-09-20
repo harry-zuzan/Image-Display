@@ -36,27 +36,23 @@ class NameList:
 		self.posn = len(self) - 1
 		return self.names[self.posn]
 
-	def at_begin(self):
-		if self.posn == 0: return True
-		return False
-
-	def at_end(self):
-		if self.posn == (len(self) - 1): return True
-		return False
-
-	def at_middle(self):
-		return not (self.at_begin() or self.at_end())
+# need to figure out whether or not to throw an exception if the
+# NameList/queue is empty
+#	def at_middle(self):
+#		return not (self.at_begin() or self.at_end())
+#
+#	def at_begin(self):
+#		if not len(self): return True
+#		if self.posn == 0: return True
+#		return False
 
 #	def at_end(self):
 #		if not len(self): return True
 #		if self.posn == (len(self) - 1): return True
 #		return False
-#
-#	def at_middle(self):
-#		return not (self.at_begin() or self.at_end())
-#
-#	def remove_current(self):
-#		if not len(self): return
-#		self.names.pop(self.posn)
-#		if not len(self): return
-#		if self.posn == len(self): self.posn -= 1
+
+	def remove_current(self,event):
+		if not len(self): return
+		self.names.pop(self.posn)
+		if not len(self): return
+		if self.posn == len(self): self.posn -= 1
