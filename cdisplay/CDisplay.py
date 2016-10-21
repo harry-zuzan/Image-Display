@@ -5,6 +5,8 @@ from PIL import Image, ImageTk
 
 from DispUtils import Coordinate, NameList
 
+
+
 class IterButton(Button):
 	def __init__(self,root,**kwargs):
 		Button.__init__(self,root,**kwargs)
@@ -127,6 +129,9 @@ class ResizingCanvas(Canvas):
 
 class CryoDisplay(Frame):
 	def __init__(self,img_names):
+#class SortDisplay(Canvas):
+#	def __init__(self, master,img_names,zoom_width,zoom_height,
+#			keep_dir,delete_dir):
 		Frame.__init__(self)
 		self.pack(expand=YES, fill=BOTH)
 		self.master.title('CryoEM Image Display')
@@ -179,6 +184,56 @@ class CryoDisplay(Frame):
 		self.canvas.bind('-', func=lambda x: self.canvas.resize_image(-1))
 
 
+#
+#		Canvas.__init__(self,master)
+#		self.pack(expand=YES, fill=BOTH)
+#		self.master.title('Image Sort')
+#		self.master.iconname('S-DISP')
+#		self.focus_set()
+#		self.master.config(highlightthickness=0)
+#		self.configure(highlightthickness=0)
+#
+#		self.name_list = NameList(img_names)
+#		self.zoom_width = zoom_width
+#		self.zoom_height = zoom_height
+#		self.keep_dir = keep_dir
+#		if not self.keep_dir[-1] == '/': self.keep_dir += '/'
+#		self.delete_dir = delete_dir
+#		if not self.delete_dir[-1] == '/': self.delete_dir += '/'
+#
+#		self.image_id = None
+#		self.is_fullscreen=False
+#		self.is_zoomed=False
+#
+#		self.scroll_start_x=0
+#		self.scroll_start_y=0
+#		self.off_centre_x=0
+#		self.off_centre_y=0
+#
+#
+#		self.bind('<Left>', self.display_prev_image)
+#		self.bind('<Right>', self.display_next_image)
+#		self.bind('<Up>', self.display_first_image)
+#		self.bind('<Down>', self.display_last_image)
+#		self.bind('<space>', self.display_next_image)
+#
+#		self.bind('<Button-1>',self.scroll_start)
+#		self.bind('<ButtonRelease-1>',self.scroll_stop)
+#		self.bind('<B1-Motion>',self.scroll_move)
+#
+#		self.bind('f', self.fullscreen)
+#		self.bind('z', self.zoom)
+#		self.bind('c', self.recentre)
+#
+#		self.bind('k', self.move_to_keep)
+#		self.bind('d', self.move_to_delete)
+#
+#		self.bind('q', self.exit_mainloop)
+#
+#		self.display_current_image()
+#
+#
+
 
 	def create_canvas(self):
 		canvas = ResizingCanvas(self,width=128,height=128)
@@ -230,69 +285,6 @@ class CryoDisplay(Frame):
 
 	def exit_mainloop(self,event):
 		self.quit()
-
-#from Tkinter import Canvas
-#from Tkinter import NW, YES, BOTH
-#
-#from PIL import Image, ImageTk
-#
-#from DispUtils import NameList
-#
-#
-#import os,subprocess
-#
-#class SortDisplay(Canvas):
-#	def __init__(self, master,img_names,zoom_width,zoom_height,
-#			keep_dir,delete_dir):
-#
-#		Canvas.__init__(self,master)
-#		self.pack(expand=YES, fill=BOTH)
-#		self.master.title('Image Sort')
-#		self.master.iconname('S-DISP')
-#		self.focus_set()
-#		self.master.config(highlightthickness=0)
-#		self.configure(highlightthickness=0)
-#
-#		self.name_list = NameList(img_names)
-#		self.zoom_width = zoom_width
-#		self.zoom_height = zoom_height
-#		self.keep_dir = keep_dir
-#		if not self.keep_dir[-1] == '/': self.keep_dir += '/'
-#		self.delete_dir = delete_dir
-#		if not self.delete_dir[-1] == '/': self.delete_dir += '/'
-#
-#		self.image_id = None
-#		self.is_fullscreen=False
-#		self.is_zoomed=False
-#
-#		self.scroll_start_x=0
-#		self.scroll_start_y=0
-#		self.off_centre_x=0
-#		self.off_centre_y=0
-#
-#
-#		self.bind('<Left>', self.display_prev_image)
-#		self.bind('<Right>', self.display_next_image)
-#		self.bind('<Up>', self.display_first_image)
-#		self.bind('<Down>', self.display_last_image)
-#		self.bind('<space>', self.display_next_image)
-#
-#		self.bind('<Button-1>',self.scroll_start)
-#		self.bind('<ButtonRelease-1>',self.scroll_stop)
-#		self.bind('<B1-Motion>',self.scroll_move)
-#
-#		self.bind('f', self.fullscreen)
-#		self.bind('z', self.zoom)
-#		self.bind('c', self.recentre)
-#
-#		self.bind('k', self.move_to_keep)
-#		self.bind('d', self.move_to_delete)
-#
-#		self.bind('q', self.exit_mainloop)
-#
-#		self.display_current_image()
-#
-#
 #	# the next two work together to slide the image around the canvas
 #	# using the mouse or track pad
 #

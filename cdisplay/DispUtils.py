@@ -37,7 +37,7 @@ class NameList:
 		return self.names[self.posn]
 
 # need to figure out whether or not to throw an exception if the
-# NameList/queue is empty
+# NameList/queue is empty.  For now they are not needed so leave them
 #	def at_middle(self):
 #		return not (self.at_begin() or self.at_end())
 #
